@@ -1,0 +1,19 @@
+# Default architecture for GD containers
+
+# Can be overridden by creating docker-compose.ENVIRONMENT.yml files.
+# https://docs.docker.com/compose/extends/
+
+# Refer to and copy docker-compose.override.yml for the default key-pairs for your own docker-compose.ENVIRONMENT.yml.
+# Overrides may include changing the following:
+# - docker network
+# - custom ports
+# - custom volumes
+# - custom enviroment vars
+
+version: '2.3' # Specify docker-compose file version to allow variable substitution
+services:
+  db:
+    build: ./db
+
+  localstack-s3:
+    image: localstack/localstack:latest

@@ -1,0 +1,37 @@
+# * reused below to forward the values to our dockerized db
+version: '2.3' # Specify docker-compose file version to allow variable substitution
+networks:
+  test-net:
+    # use default driver
+services:
+  db-test:
+    build: ./db
+    restart: on-failure
+    healthcheck:
+      test: 'exit 0'
+    environment:
+      - POSTGRES_DB=${DB_NAME:-greendirect-test}
+    ports: # host's DB_PORT, else default 5432.
+      - '${DB_PORT:-50505}:5432'
+    networks:
+      - test-net
+
+  localstack-s3-test:
+    image: localstack/localstack:latest
+    depends_on:
+      # force compose to prioritize db starting order
+      db-test:
+        condition: service_healthy
+    volumes:
+      - ./localstack:/tmp/localstack
+    ports:
+      - '5054:8080'
+      - '5057:5000'
+      - '5058:4566'
+    environment:
+      - SERVICES=s3:5000,web:8080,sns:4566
+      - DEFAULT_REGION=us-west-2
+      - DATA_DIR=/tmp/localstack/data
+      - HOSTNAME_EXTERNAL=${HOSTNAME_EXTERNAL:-localhost}
+    networks:
+      - test-net
